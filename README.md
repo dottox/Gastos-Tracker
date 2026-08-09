@@ -6,10 +6,13 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/estado.png" alt="Pantalla Estado" width="250">
-  <img src="docs/screenshots/nuevo-gasto.png" alt="Formulario de nuevo gasto" width="250">
-  <img src="docs/screenshots/ajustes.png" alt="Pantalla de ajustes" width="250">
+  <img src="docs/screenshots/estado.png" alt="Resumen mensual con desglose por categoría" width="210">
+  <img src="docs/screenshots/gastos.png" alt="Lista de gastos del mes" width="210">
+  <img src="docs/screenshots/ingresos.png" alt="Lista de ingresos del mes" width="210">
+  <img src="docs/screenshots/ajustes.png" alt="Categorías y ajustes" width="210">
 </p>
+
+<p align="center"><sub>Las capturas usan datos ficticios para mostrar la experiencia con un mes ya en uso.</sub></p>
 
 ## Para qué sirve
 
