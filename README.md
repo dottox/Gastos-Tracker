@@ -9,7 +9,6 @@
   <img src="docs/screenshots/estado.png" alt="Resumen mensual con desglose por categoría" width="210">
   <img src="docs/screenshots/gastos.png" alt="Lista de gastos del mes" width="210">
   <img src="docs/screenshots/ingresos.png" alt="Lista de ingresos del mes" width="210">
-  <img src="docs/screenshots/ajustes.png" alt="Categorías y ajustes" width="210">
 </p>
 
 <p align="center"><sub>Las capturas usan datos ficticios para mostrar la experiencia con un mes ya en uso.</sub></p>
