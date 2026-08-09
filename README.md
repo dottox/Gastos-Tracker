@@ -25,7 +25,15 @@
 - **Privacidad offline:** tus datos permanecen en el dispositivo.
 - **Experiencia cuidada:** tema claro/oscuro, feedback háptico, formularios simples y notificaciones integradas en la interfaz.
 
-## Cómo empezar
+## Instalar la aplicación
+
+Descarga **[mis_gastos.apk](https://github.com/dottox/Gastos-Tracker/releases/latest/download/mis_gastos.apk)** desde la sección de [Releases](https://github.com/dottox/Gastos-Tracker/releases) e instálalo en un dispositivo Android 14 o superior. Al instalarla fuera de Google Play, Android puede mostrar una advertencia o pedir permiso para instalar aplicaciones desde esa fuente.
+
+La aplicación se llama **Mis Gastos** y el paquete es `com.example.misgastos`.
+
+---
+
+## Cómo empezar (Desarrolladores)
 
 Abre el proyecto en Android Studio y ejecútalo en un dispositivo o emulador con Android 14 o superior.
 
@@ -34,8 +42,6 @@ Desde la terminal:
 ```bash
 ./gradlew installDebug
 ```
-
-La aplicación se llama **Mis Gastos** y el paquete es `com.example.misgastos`.
 
 ---
 
