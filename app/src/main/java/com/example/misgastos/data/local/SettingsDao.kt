@@ -28,6 +28,9 @@ interface SettingsDao {
     @Query("SELECT * FROM categories WHERE type = :type")
     suspend fun getCategories(type: TransactionType): List<Category>
 
+    @Query("SELECT * FROM categories ORDER BY id")
+    suspend fun getAllCategories(): List<Category>
+
     @Query(
         "SELECT * FROM categories " +
             "WHERE type = :type AND name = :name COLLATE NOCASE LIMIT 1"
@@ -39,6 +42,9 @@ interface SettingsDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCategories(categories: List<Category>)
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories()
 
     @Transaction
     suspend fun seedDefaults(settings: AppSettings, categories: List<Category>) {

@@ -78,8 +78,17 @@ interface TransactionDao {
     )
     fun observeHistoricalSavings(): Flow<Long>
 
+    @Query("SELECT * FROM transactions ORDER BY id")
+    suspend fun getAll(): List<Transaction>
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transaction: Transaction): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(transactions: List<Transaction>)
 
     @Update
     suspend fun update(transaction: Transaction)

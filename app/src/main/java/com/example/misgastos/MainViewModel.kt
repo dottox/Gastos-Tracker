@@ -1,9 +1,12 @@
 package com.example.misgastos
 
 import android.app.Application
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.misgastos.data.BackupRepository
 import com.example.misgastos.data.SettingsRepository
 import com.example.misgastos.data.TransactionRepository
 import com.example.misgastos.data.local.AppDatabase
@@ -14,6 +17,7 @@ import com.example.misgastos.data.local.TransactionType
 import com.example.misgastos.data.local.ThemeMode
 import com.example.misgastos.domain.MainUiState
 import com.example.misgastos.domain.SettingsUiState
+import java.io.IOException
 import java.time.YearMonth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,13 +36,18 @@ import kotlinx.coroutines.withContext
 sealed class MainEvent {
     data object TransactionSaved : MainEvent()
     data object TransactionDeleted : MainEvent()
+    data object BackupExported : MainEvent()
+    data object BackupImported : MainEvent()
+    data object BackupError : MainEvent()
     data object StorageError : MainEvent()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModel(
     private val repository: TransactionRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val backupRepository: BackupRepository,
+    private val contentResolver: ContentResolver
 ) : ViewModel() {
     companion object {
         const val DEFAULT_SAVINGS_GOAL_CENTS = DefaultSettings.SAVINGS_GOAL_CENTS
@@ -255,6 +264,36 @@ class MainViewModel(
         }
     }
 
+    fun exportBackup(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    contentResolver.openOutputStream(uri)?.use { output ->
+                        backupRepository.export(output)
+                    } ?: throw IOException("No se pudo abrir el archivo de destino")
+                }
+                _events.emit(MainEvent.BackupExported)
+            } catch (_: Exception) {
+                _events.emit(MainEvent.BackupError)
+            }
+        }
+    }
+
+    fun importBackup(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        backupRepository.import(input)
+                    } ?: throw IOException("No se pudo abrir el archivo seleccionado")
+                }
+                _events.emit(MainEvent.BackupImported)
+            } catch (_: Exception) {
+                _events.emit(MainEvent.BackupError)
+            }
+        }
+    }
+
     class Factory(
         private val application: Application
     ) : ViewModelProvider.Factory {
@@ -267,7 +306,9 @@ class MainViewModel(
             val database = AppDatabase.getInstance(application)
             return MainViewModel(
                 repository = TransactionRepository(database.transactionDao()),
-                settingsRepository = SettingsRepository(database.settingsDao())
+                settingsRepository = SettingsRepository(database.settingsDao()),
+                backupRepository = BackupRepository(database),
+                contentResolver = application.contentResolver
             ) as T
         }
     }

@@ -17,18 +17,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,18 +65,25 @@ fun SettingsScreen(
     onAddCategory: (TransactionType, String, String) -> Unit,
     onDeleteCategory: (TransactionType, String) -> Unit,
     onUpdateCategoryIcon: (TransactionType, String, String) -> Unit,
+    onExportData: () -> Unit,
+    onImportData: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var decimalPlaces by rememberSaveable { mutableIntStateOf(settings.decimalPlaces) }
-    var savingsGoal by rememberSaveable {
+    var decimalPlaces by rememberSaveable(settings.decimalPlaces) {
+        mutableIntStateOf(settings.decimalPlaces)
+    }
+    var savingsGoal by rememberSaveable(settings.savingsGoalCents, settings.decimalPlaces) {
         mutableStateOf(
             MoneyFormatter.formatAmountInput(settings.savingsGoalCents, settings.decimalPlaces)
         )
     }
-    var themeName by rememberSaveable { mutableStateOf(settings.themeMode.name) }
+    var themeName by rememberSaveable(settings.themeMode.name) {
+        mutableStateOf(settings.themeMode.name)
+    }
     var showGoalError by rememberSaveable { mutableStateOf(false) }
     var expenseCategoryInput by rememberSaveable { mutableStateOf("") }
     var incomeCategoryInput by rememberSaveable { mutableStateOf("") }
+    var showImportConfirmation by rememberSaveable { mutableStateOf(false) }
 
     val selectedTheme = ThemeMode.values().firstOrNull { it.name == themeName }
         ?: ThemeMode.SISTEMA
@@ -202,6 +214,51 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = stringResource(R.string.settings_backup_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = stringResource(R.string.settings_backup_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onExportData,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FileDownload,
+                        contentDescription = null
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_export),
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
+                OutlinedButton(
+                    onClick = { showImportConfirmation = true },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FileUpload,
+                        contentDescription = null
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_import),
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                }
+            }
+        }
+
+        HorizontalDivider()
+
         CategorySettingsSection(
             title = stringResource(R.string.settings_expense_categories),
             categories = settings.expenseCategories,
@@ -234,6 +291,29 @@ fun SettingsScreen(
             }
         )
         Spacer(modifier = Modifier.size(8.dp))
+    }
+
+    if (showImportConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showImportConfirmation = false },
+            title = { Text(stringResource(R.string.settings_import_title)) },
+            text = { Text(stringResource(R.string.settings_import_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showImportConfirmation = false
+                        onImportData()
+                    }
+                ) {
+                    Text(stringResource(R.string.settings_import_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showImportConfirmation = false }) {
+                    Text(stringResource(R.string.button_cancel))
+                }
+            }
+        )
     }
 }
 

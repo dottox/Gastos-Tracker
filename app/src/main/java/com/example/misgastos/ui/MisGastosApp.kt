@@ -1,6 +1,8 @@
 package com.example.misgastos.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,6 +80,14 @@ fun MisGastosApp(viewModel: MainViewModel) {
 
     MisGastosTheme(themeMode = settingsState.themeMode) {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val exportLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("application/json"),
+            onResult = { uri -> uri?.let(viewModel::exportBackup) }
+        )
+        val importLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+            onResult = { uri -> uri?.let(viewModel::importBackup) }
+        )
         val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
         val coroutineScope = rememberCoroutineScope()
         val resources = LocalResources.current
@@ -95,13 +105,16 @@ fun MisGastosApp(viewModel: MainViewModel) {
                 val message = when (event) {
                     MainEvent.TransactionSaved -> R.string.transaction_saved
                     MainEvent.TransactionDeleted -> R.string.transaction_deleted
+                    MainEvent.BackupExported -> R.string.backup_exported
+                    MainEvent.BackupImported -> R.string.backup_imported
+                    MainEvent.BackupError -> R.string.backup_error
                     MainEvent.StorageError -> R.string.storage_error
                 }
                 notificationId += 1
                 notification = NotificationState(
                     id = notificationId,
                     message = resources.getString(message),
-                    isError = event == MainEvent.StorageError
+                    isError = event == MainEvent.StorageError || event == MainEvent.BackupError
                 )
             }
         }
@@ -136,7 +149,13 @@ fun MisGastosApp(viewModel: MainViewModel) {
                     onSaveSettings = viewModel::saveSettings,
                     onAddCategory = viewModel::addCategory,
                     onDeleteCategory = viewModel::deleteCategory,
-                    onUpdateCategoryIcon = viewModel::updateCategoryIcon
+                    onUpdateCategoryIcon = viewModel::updateCategoryIcon,
+                    onExportData = {
+                        exportLauncher.launch("mis_gastos_backup.json")
+                    },
+                    onImportData = {
+                        importLauncher.launch(arrayOf("application/json", "text/plain"))
+                    }
                 )
             } else {
                 Box(
